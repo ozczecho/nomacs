@@ -1,0 +1,73 @@
+name: Windows workflow
+
+# Manual only: run from the Actions tab ("Run workflow").
+# Mirrors the MSVC build in appveyor.yml, minus MSI creation and code signing.
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    name: build (x64)
+    env:
+      QT_VERSION: 6.11.1
+      NOMACS_DEPENDENCIES: ${{ github.workspace }}/3rd-party
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # revision string is derived from git history
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          arch: win64_msvc2022_64
+          modules: qt5compat qtimageformats
+          cache: true
+
+      - name: Download dependencies
+        shell: pwsh
+        run: |
+          # same prebuilt dependency bundle and NASM that appveyor.yml uses
+          Invoke-WebRequest "https://github.com/novomesk/downloads/raw/refs/heads/main/nomacs/nomacs-dependencies-2026-09-04.7z" -OutFile nomacs-dependencies.7z
+          Invoke-WebRequest "https://github.com/novomesk/downloads/raw/main/nasm-2.16.03-win64.zip" -OutFile nasm.zip
+          New-Item -ItemType Directory -Force 3rd-party | Out-Null
+          7z x -o3rd-party nomacs-dependencies.7z
+          7z x -onasm nasm.zip
+          $nasm = (Get-ChildItem nasm -Directory | Select-Object -First 1).FullName
+          Add-Content $env:GITHUB_PATH $nasm
+
+      - name: Set up MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Configure
+        shell: cmd
+        run: |
+          nasm -v
+          cmake -S ImageLounge -B build -G "NMake Makefiles" ^
+            -DCMAKE_PREFIX_PATH="%QT_ROOT_DIR%;%NOMACS_DEPENDENCIES%" ^
+            -DCMAKE_INSTALL_PREFIX="%GITHUB_WORKSPACE%\installer\nomacs.x64" ^
+            -DCMAKE_BUILD_TYPE=Release ^
+            -DBUILD_SHARED_LIBS=ON ^
+            -DOpenCV_DIR="%NOMACS_DEPENDENCIES%/lib" ^
+            -DENABLE_QUAZIP=ON
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Install
+        run: cmake --install build
+
+      - name: Create portable zip
+        working-directory: installer
+        run: python ../scripts/make-portable.py
+
+      - name: Upload portable build
+        uses: actions/upload-artifact@v4
+        with:
+          name: nomacs-portable-win-x64
+          path: installer/nomacs-portable-win.zip
+          if-no-files-found: error
