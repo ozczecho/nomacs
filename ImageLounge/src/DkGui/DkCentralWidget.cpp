@@ -1439,12 +1439,11 @@ void DkCentralWidget::renameFile()
     const QString baseName = fileInfo.completeBaseName();
 
     bool ok = false;
-    QString newFileName = QInputDialog::getText(this,
-                                                tr("Rename: %1").arg(fileInfo.fileName()),
-                                                tr("New File Name:"),
-                                                QLineEdit::Normal,
-                                                baseName,
-                                                &ok);
+    QString newFileName = DkDialog::getText(this, //
+                                              tr("Rename: %1").arg(fileInfo.fileName()),
+                                              tr("New File Name:"),
+                                              baseName,
+                                              &ok);
 
     if (!ok || newFileName.isEmpty() || newFileName == baseName)
         return;

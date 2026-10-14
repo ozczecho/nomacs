@@ -64,3 +64,7 @@ snap/.snapcraft/
 CMakeLists.txt.user
 CMakeLists.txt.user.*
 
+
+# Claude Code / OpenSpec
+.claude/
+openspec/

@@ -67,6 +67,9 @@ class DkCentralWidget;
 namespace DkDialog
 {
 QFileDialog::Options fileDialogOptions();
+
+/// QInputDialog::getText() with a wider filename field; returns an empty string if canceled (ok is false)
+QString getText(QWidget *parent, const QString &title, const QString &label, const QString &text, bool *ok = nullptr);
 };
 
 // needed because of http://stackoverflow.com/questions/1891744/pyqt4-qspinbox-selectall-not-working-as-expected

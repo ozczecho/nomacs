@@ -111,6 +111,27 @@ QFileDialog::Options DkDialog::fileDialogOptions()
     return flags;
 }
 
+QString DkDialog::getText(QWidget *parent, const QString &title, const QString &label, const QString &text, bool *ok)
+{
+    QInputDialog dlg(parent);
+    dlg.setInputMode(QInputDialog::TextInput);
+    dlg.setWindowTitle(title);
+    dlg.setLabelText(label);
+    dlg.setTextValue(text);
+
+    // QInputDialog's default is narrow; make room for long filenames
+    int width = dlg.fontMetrics().averageCharWidth() * 80;
+    if (const QScreen *screen = dlg.screen())
+        width = qMin(width, screen->availableGeometry().width());
+    dlg.resize(qMax(width, dlg.sizeHint().width()), dlg.sizeHint().height());
+
+    const bool accepted = dlg.exec() == QDialog::Accepted;
+    if (ok)
+        *ok = accepted;
+
+    return accepted ? dlg.textValue() : QString();
+}
+
 // DkSplashScreen --------------------------------------------------------------------
 DkSplashScreen::DkSplashScreen(QWidget *parent, Qt::WindowFlags flags)
     : QDialog(parent, flags)

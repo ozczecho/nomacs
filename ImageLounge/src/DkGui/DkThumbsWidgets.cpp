@@ -44,7 +44,6 @@
 #include <QClipboard>
 #include <QDrag>
 #include <QGraphicsSceneMouseEvent>
-#include <QInputDialog>
 #include <QLayout>
 #include <QLineEdit>
 #include <QMenu>
@@ -1857,12 +1856,11 @@ void DkThumbScene::renameSelected() const
 
     bool ok;
     const bool oneFile = fileList.count() == 1;
-    QString newFileName = QInputDialog::getText(DkUtils::getMainWindow(),
-                                                oneFile ? tr("Rename File") : tr("Rename Multiple Files"),
-                                                oneFile ? tr("New Filename:") : tr("Filename Prefix:"),
-                                                QLineEdit::Normal,
-                                                oneFile ? QFileInfo(fileList[0]).completeBaseName() : "img",
-                                                &ok);
+    QString newFileName = DkDialog::getText(DkUtils::getMainWindow(),
+                                              oneFile ? tr("Rename File") : tr("Rename Multiple Files"),
+                                              oneFile ? tr("New Filename:") : tr("Filename Prefix:"),
+                                              oneFile ? QFileInfo(fileList[0]).completeBaseName() : "img",
+                                              &ok);
 
     if (!ok || newFileName.isEmpty()) {
         return;
