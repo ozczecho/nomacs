@@ -10,11 +10,12 @@ jobs:
     runs-on: windows-latest
     name: build (x64)
     env:
-      QT_VERSION: 6.11.1
+      # 6.11.x is on download.qt.io's new repo layout, which aqtinstall 3.3.0 can't read yet (appveyor uses 6.11.1)
+      QT_VERSION: 6.10.3
       NOMACS_DEPENDENCIES: ${{ github.workspace }}/3rd-party
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0 # revision string is derived from git history
 
